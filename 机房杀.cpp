@@ -164,13 +164,13 @@ namespace User_input{
 		cout<<"  2.做题：成绩加上知识点数量*0.5（向上取整）"<<endl;
 		cout<<"  3.狂人卷题：生命-1，成绩+知识点数量*1"<<endl;
 		cout<<"  4.禁止内卷：所有角色本轮无法使用卡牌1、2、3。"<<endl;
-		cout<<"  5.腐败：生命+1，成绩-4.2。"<<endl;
+		cout<<"  5.腐败：生命+1，成绩-4.2（最终结算向上取整）。"<<endl;
 		cout<<"  6.一起腐败：你选择一名其他角色，你与其生命各+2，你成绩-6，其成绩-8。"<<endl;
 		cout<<"  7.向AJ举报：你选择一名其他角色，其生命-1，如果其本轮成为过卡牌5、6的目标，改为生命-3。"<<endl;
-		cout<<"  8.急眼：你选择一名其他角色，其生命-2，你成绩-2.4（最终结算向上取证），然后如果其本轮成为过卡牌5、6的目标，其成绩再-1。"<<endl;
+		cout<<"  8.急眼：你选择一名其他角色，其生命-2，你成绩-2.4（最终结算向上取整），然后如果其本轮成为过卡牌5、6的目标，其成绩再-1。"<<endl;
 		cout<<"  9.翻墙：除了本回合成为卡牌1、2、3的目标的人外，其他所有角色成绩-3.5（最终结算向上取整），生命-1，然后你有50%概率成绩-3，生命-1。"<<endl;
-		cout<<"  10.机惨：你选择一名其他角色，其成绩在接下来2回合中每回合减去目前玩家人数，并且不能使用卡牌（卡牌正常抽取，可以弃牌），不叠加"<<endl;
-		cout<<"有概率摸到更高稀有度，每一级有益效果*1.67），对成绩的减益*1.67，对最终结果向上取整，优先于被动技能。"<<endl;
+		cout<<"  10.机惨：你选择一名其他角色，其成绩在接下来2回合中每回合减去目前玩家人数，并且不能使用卡牌（卡牌正常抽取，可以弃牌），不叠加。"<<endl;
+		cout<<"有概率摸到更高稀有度（依次为：普通；罕见；稀有；史诗；传奇；神话），每一级有益效果*1.67，对最终结果向上取整，优先于被动技能。"<<endl;
 		cout<<"角色："<<endl;
 		cout<<"  1.lyr：使用卡牌5时生命+1，成绩-2。"<<endl;
 		cout<<"		（1）腐败王：你可以视为使用了一张卡牌5，本轮其他所有角色无法使用卡牌1。"<<endl;
@@ -187,8 +187,8 @@ namespace User_input{
 		cout<<"  5.nmk：每轮摸1张卡牌5。"<<endl;
 		cout<<"		（1）腐败小助手：你使用卡牌5、6时不视为腐败。"<<endl;
 		cout<<"		（2）你是个废物！：你选择一名角色，令其弃置手中的所有卡牌1、2、3。"<<endl;
-		cout<<"  6.AJ：在你腐败时，其它角色对你使用的卡牌7改为“你自减稀有度等级*2”。"<<endl;
-		cout<<"		（1）抓腐：你使用卡牌7时。"<<endl;
+		cout<<"  6.AJ：在你腐败时，其它角色对你使用的卡牌7改为“你自减稀有度等级*2生命”。"<<endl;
+		cout<<"		（1）抓腐：你使用卡牌7时对所有人（自己除外）有效。"<<endl;
 		cout<<"		（2）不死之身：每局限两次，若你的生命<=2且不为0，你选择一项：1.生命+2；2.你选择一名其它角色，令其生命-5，成绩=0，然后你死亡。"<<endl;
 		cout<<"禁用卡牌：" << endl;
 		cout<<"  你可以将一个配置文件拖入可执行文件中，配置文件由若干行组成，每一行格式形如[name delete=c1[,c2,c3,...]]。"<<endl;
@@ -300,7 +300,7 @@ struct Group{
 					cout << "xza发动了被动技能[蓝勾爷]！做题时各效果再x1.6。\n";
 					addsc=ceil(addsc*1.6);
 				} else if(spritename=="wcy"){
-					cout << "wcy发动了被动技能[秒题]！使用的卡牌3改为每有1知识点，成绩+0.8。\n";
+					cout << "wcy发动了被动技能[秒题]！使用的卡牌2改为每有1知识点，成绩+0.8。\n";
 					addsc=ceil(players[playerid].knowledge*0.8);
 				}
 				cout << players[playerid].name << "成绩+" << addsc << "\n";
@@ -457,8 +457,8 @@ struct Group{
 					break;
 				}
 				int chooseplayer=choooseplayer(playerid);
-				int addlf_it=-2,addsc_self=-ceil(2.4*rarity_times[_rarity]),addsc_it=0;
-				if(players[chooseplayer].tags["corruption"]=="true")	addsc_it-=5;
+				int addlf_it=-ceil(2.0*rarity_times[_rarity]),addsc_self=-ceil(2.4*rarity_times[_rarity]),addsc_it=0;
+				if(players[chooseplayer].tags["corruption"]=="true")	addsc_it-=ceil(1.0*rarity_times[_rarity]);
 				cout << players[playerid].name << "成绩-" << -addsc_self << "\n";
 				cout << players[chooseplayer].name << "生命-" << -addlf_it;
 				if(addsc_it){
@@ -496,7 +496,7 @@ struct Group{
 				int chooseplayer=choooseplayer(playerid);
 				int jcnums=ceil(2*rarity_times[_rarity]);
 				players[chooseplayer].tags["jced"]=to_string(jcnums);
-				cout << players[chooseplayer].name << "被机惨了，接下来" << jcnums << "个回合每回合无法行动，且每回合成绩减去目前玩家人数。\n";
+				cout << players[chooseplayer].name << "被机惨了，接下来" << jcnums << "个回合每回合无法行动，且每回合成绩减去目前玩家人数点。\n";
 			}
 			break;
 		}
@@ -604,7 +604,7 @@ struct Group{
 				if(op==0){
 					//腐败王
 					cout << "视为使用一张[腐败]，本轮所有角色无法使用[学新知识点]。\n";
-					int addlf=1,addsc=-7;
+					int addlf=1,addsc=-4.2;
 					cout << players[i].name << "生命+" << addlf << " 成绩-" << -addsc << "\n";
 					addlf++;
 					addsc-=2;
